@@ -13,6 +13,7 @@ class Game(object):
         self.rooms = {} # dictionary of rooms, key is room number
         self.items = {} # dictionary of items, key is item number
         self.monsters = {} # dictionary of monsters, key is m. number
+        self.effects = {}
 
 
 class Player(object):
@@ -35,14 +36,19 @@ class Item(object):
     def __init__(self, game, description="", mass=0):
         self.number = Item.number
         Item.number += 1
+        self.effect = None
+        self.description=description
         if mass == 0.0:
             mass = round(random.randint(1,50))
         self.mass = mass
-        if description == "":
-            description = random.choice(("helmet","chestplate","pants",
+        self.description=description
+        if self.description == "":
+            self.description = random.choice(("helmet","chestplate","pants",
                     "shoes","potion of instant healing","potion of strenght",
                     "potion of speed","potion of regeneration","gold","sword",
-                    "bow","arrows","shield"))
+                    "bow","arrows","shield","teleport pill"))
+        if self.description == "teleport pill":
+            self.effect = "teleport"
         self.description = description
         game.items[self.number] = self # add item into game dict
 
@@ -80,7 +86,38 @@ class Monster(object):
 
 
 class Effect(object):
-    pass
+    def __init__(self, g, effectname, description="", roomnumber=-1, 
+                 affectplayer = True, summonalies = 0, summonenemy = 0, 
+                 teleport = -1, summonitem = -1, destroyitem = 0, 
+                 highweight = 0, lowweight = 0, healplayer = 0, 
+                 damageplayer = 0, killenemy = 0):
+        self.effectname = effectname
+        self.roomnumber = roomnumber
+        self.description = description
+        self.affectplayer = affectplayer
+        self.summonalies = summonalies
+        self.sommonenemy = summonenemy
+        self.teleport = teleport
+        self.summonitem = summonitem
+        self.destroyitem = destroyitem
+        self.highweight = highweight
+        self.lowweight = lowweight
+        self.healplayer = healplayer
+        self.damageplayer = damageplayer
+        self.killenemy = killenemy
+        g.effects[self.effectname] = self
+        
+    def action(self, g, p):
+        """g = Game   p = Player"""
+        print("The effect does his job")
+        if self.teleport != -1:
+            while True:
+                target = random.choice(g.rooms)
+                if target == 4:
+                    continue
+                else:
+                    break
+            p.where=target
 
 class Room(object):
     number = 0
@@ -183,7 +220,7 @@ def drop_item(game, player):
         output("Wrong input")
         return
     if len(player.inventory) > 0:
-        # pick up chosen item in this room
+        # drop chosen item in inventory
         player.inventory.remove(selection)
         game.rooms[player.where].itemnumbers.append(selection)
 
@@ -213,6 +250,23 @@ def pickup_item(game, player):
          output("")
          output("You're carrying too much!")
          output("You have to drop something to carry more stuff!")
+         
+def use_item(game, player):
+    for i in player.inventory:
+        output("")
+        print(i,"...........",game.items[i].description)
+        output("")
+    output("Please type selected number and press ENTER")
+    try:
+        selection=int(input(">>> "))
+    except:
+        output("")
+        output("Wrong input")
+        return
+    if len(player.inventory) > 0:
+        # use chosen item in inventory
+        player.inventory.remove(selection)
+        #game.rooms[player.where].itemnumbers.append(selection)
 
 # this funciton use input, replace later with gui command
 def nextAction(game, player):
@@ -241,6 +295,7 @@ def nextAction(game, player):
     actions = {"d":"drop item",
                "i":"inspect inventory",
                "p":"pick up item",
+               "u":"use item",
                "c":"cancel"}
     for a in actions:
         output("{}....{}".format(a, actions[a]))
@@ -253,6 +308,8 @@ def nextAction(game, player):
         drop_item(game, player)
     elif answer == "p":
         pickup_item(game, player)
+    elif answer == "u":
+        use_item(game, player)
     return player.where # return the same room number
 
 
@@ -275,21 +332,30 @@ Room(g,"boss chamber", [6], monsterchances=[1.0,0.9,0.8,0.5,0.5,0.5],
 # room number 4
 Room(g,"end of the world (game over)", [], explored=True)
 # room number 5
-Room(g,"npc room", [2,9])
+Room(g,"npc room", [2,9,10])
 # room number 6
-Room(g,"gear room", [1,3])
+Room(g,"gear room", [1,3,10])
 # room number 7
 Room(g,"trader", [2,5,8])
 # room number 8
 Room(g,"enemy room", [3,7], monsterchances=[1.0,1.0,1.0,0.9,0.7,0.5,0.2])
 # room number 9
-Room(g,"empty room", [5], itemchances=[])
+Room(g,"empty room", [5,12], itemchances=[])
+# room number 10
+Room(g,"mini boss",  [5,6], monsterchances=[1.0,0.5,0.5,0.5], bosschances = [0.5])
+# room number 11
+Room(g,"random room", [10,12])
+#room number 12
+Room(g,"random room", [11,9])
 # items
 i=Item(g,"potion of instant healing",mass=0.25)
 g.rooms[6].itemnumbers.append(i.number) # puts item i in room 6
 # you can use another item for i
 i=Item(g,"wheel of cheese",mass=0.50)
 g.rooms[2].itemnumbers.append(i.number)
+# add effects
+e = Effect(g,"teleport",teleport=1)
+e.description = "You wake up in a strange room"
 
 # start player in lobby (room 0)
 # where = 0 # the actual room number
