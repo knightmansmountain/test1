@@ -37,7 +37,6 @@ class Item(object):
         self.number = Item.number
         Item.number += 1
         self.effect = None
-        self.description=description
         if mass == 0.0:
             mass = round(random.randint(1,50))
         self.mass = mass
@@ -49,7 +48,6 @@ class Item(object):
                     "bow","arrows","shield","teleport pill"))
         if self.description == "teleport pill":
             self.effect = "teleport"
-        self.description = description
         game.items[self.number] = self # add item into game dict
 
     def info(self):
