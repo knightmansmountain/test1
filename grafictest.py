@@ -3,12 +3,16 @@ class Level(object):
         self.lines=len(txt.splitlines())
         self.colls=len(txt.splitlines()[1])
         self.txt=txt
+    def check(self, x, y):
+        #check if  position x/y is a valid space
+        char=self.txt.splitlines()[y][x]
+        return char
 
 levels=[]
 players=[]
 #level0
 levels.append(Level("""
-#########            #########################################
+#########nnnnnnnnnnnn#########################################
 ##########            ################  8    MMM             #
 ###########            ###############  7     MMM            #
 ############             ############# MMMMMMMMM             #
@@ -28,7 +32,7 @@ levels.append(Level("""
 #         T                                                  #
 #                            G                               #
 #                                                            #
-##################################       #####################
+##############################################################
 """))
 #T=Troll / G=Goblin / D=DarkElv / B=Bat / O=Ork / M=Mice
 #|=breakable wall / #=unbreakable wall
@@ -37,7 +41,7 @@ levels.append(Level("""
 
 #level1
 levels.append(Level("""
-##############################################################
+#########pppppppppppp#########################################
 #                                                            #
 #   ###################                    ######            #
 #   #                 #                    #    #            #
@@ -57,12 +61,33 @@ levels.append(Level("""
 #   #        #        #                    #                 #
 #   ##########        #                    #                 #
 #                     #                    #                 #
-###########################            #######################
+##########################nnnnnnnnnnnnn#######################
 """))
 
-
-mylevel=0
-
+#level 2
+levels.append(Level("""
+##############################################################
+#                                                            #
+#                                                            #
+#                                                            #
+#                                                            #
+#                                                            #
+#                                                            #
+#                                                            #
+#                                                            #
+#                                                            #
+#                                                            #
+#                                                            #
+#                                                            #
+#                                                            #
+#                                                            #
+#                                                            #
+#                                                            #
+#                                                            #
+#                                                            #
+#                                                            #
+##########################ppppppppppppp#######################
+"""))
 
 class Player(object):
     def __init__(self,x,y):
@@ -72,6 +97,7 @@ class Player(object):
 players.append(Player(3,19))
 
 def main():
+    mylevel=0
     while True:
         x=0
         y=0
@@ -94,17 +120,53 @@ def main():
         command=input(">>>").lower()
         if command=="w":
             if players[0].y>1:
-                players[0].y-=1
+                newchar=levels[mylevel].check(players[0].x, players[0].y-1)
+                if newchar in "#|*":
+                    print("You can't go there!")
+                elif newchar == "n":
+                    mylevel+=1
+                elif newchar == "p":
+                    mylevel-=1
+                else:
+                    players[0].y-=1
         if command=="s":
             if players[0].y< levels[mylevel].lines-1:
-                players[0].y+=1
+                newchar=levels[mylevel].check(players[0].x, players[0].y+1)
+                if newchar in "#|*":
+                    print("You can't go there!")
+                elif newchar == "n":
+                    mylevel+=1
+                elif newchar == "p":
+                    mylevel-=1
+                else:
+                    players[0].y+=1
         if command=="a":
             if players[0].x>0:
-                players[0].x-=1
+                newchar=levels[mylevel].check(players[0].x-1, players[0].y)
+                if newchar in "#|*":
+                    print("You can't go there!")
+                elif newchar == "n":
+                    mylevel+=1
+                elif newchar == "p":
+                    mylevel-=1
+                else:
+                    players[0].x-=1
         if command=="d":
             if players[0].x< levels[mylevel].colls-1:
-                players[0].x+=1
+                newchar=levels[mylevel].check(players[0].x+1, players[0].y)
+                if newchar in "#|*":
+                    print("You can't go there!")
+                elif newchar == "n":
+                    mylevel+=1
+                elif newchar == "p":
+                    mylevel-=1
+                else:
+                    players[0].x+=1
         if command=="q":
             break
+        if command=="+":
+            mylevel+=1
+        if command=="-":
+            mylevel-=1
 
 main()
